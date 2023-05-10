@@ -1,10 +1,15 @@
 package com.example.OnlineAuctionApp.service;
 
+import com.example.OnlineAuctionApp.models.Image;
 import com.example.OnlineAuctionApp.models.Product;
+import com.example.OnlineAuctionApp.repositories.ImageRepository;
 import com.example.OnlineAuctionApp.repositories.ProductRepository;
+import com.example.OnlineAuctionApp.util.ImageUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,6 +21,7 @@ import java.util.TimerTask;
 @RequiredArgsConstructor
 public class ProductService {
     private final ProductRepository productRepository;
+    private final ImageRepository imageRepository;
 
 
     public List<Product> getAllProducts() {
@@ -34,7 +40,7 @@ public class ProductService {
         LocalDateTime endTime = product.getEndTime();
         LocalDateTime currentTime = LocalDateTime.now();
 
-        if(endTime.isBefore(currentTime)){
+        if(endTime != null && endTime.isBefore(currentTime)){
             throw new IllegalArgumentException("End time cant be before current time, dude");
         }
         long secondsUntilExpiration = Duration.between(currentTime, endTime).getSeconds();
@@ -67,6 +73,23 @@ public class ProductService {
             return productRepository.save(existingProduct);
         }
         return null;
+    }
+
+    public String uploadImage(MultipartFile file) throws IOException {
+        Image imageDate = imageRepository.save(Image.builder()
+                .name(file.getOriginalFilename())
+                .type(file.getContentType())
+                .imageData(ImageUtils.compressImage(file.getBytes())).build());
+        if(imageDate!=null){
+            return "Файл " + file.getOriginalFilename() + " успешно загружен";
+        }
+        return null;
+    }
+
+    public byte[] downloadImage(String fileName){
+        Optional<Image> dbImageData = imageRepository.findByName(fileName);
+        byte[] images = ImageUtils.decompressImage(dbImageData.get().getImageData());
+        return images;
     }
 
 }
