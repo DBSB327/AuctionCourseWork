@@ -9,20 +9,25 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequestMapping("/bid")
 @RequiredArgsConstructor
 public class BidService {
-    private BidRepository bidRepository;
-    private ProductService productService;
-    private UserService userService;
+    private final BidRepository bidRepository;
+    private final ProductService productService;
+    private final UserService userService;
 
     public void makeBid(Long productId, Long userId, Integer amount) throws Exception {
         Optional<Product> product = productService.getProductById(productId);
+        if(product.isEmpty()){
+            throw new Exception("Товар не найден");
+        }
         Optional<User> user = userService.getUserById(userId);
+        if(user.isEmpty()){
+            throw new Exception("Пользователь не найден");
+        }
 
         if (!product.get().getIsActive()) {
             throw new Exception("Торги по этому товару закрыты.");
@@ -37,11 +42,19 @@ public class BidService {
         Bid bid = new Bid();
         bid.setAmount(amount);
         bid.init();
-        bid.setProduct(product.get());
+        bid.setProduct(Collections.singletonList(product.get()));
         bid.setBuyer(user.get());
+        List<Bid> bids = product.get().getBids();
+        if(bids==null){
+            bids = new ArrayList<>();
+            product.get().setBids(bids);
+        }
+
+        bids.add(bid);
+
         bidRepository.save(bid);
 
-        product.get().setStartprice(amount);
+        product.get().setStartprice(highestBid);
         productService.updateProduct(product.get());
     }
 

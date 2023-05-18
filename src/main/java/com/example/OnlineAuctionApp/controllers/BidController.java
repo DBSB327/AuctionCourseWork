@@ -1,5 +1,6 @@
 package com.example.OnlineAuctionApp.controllers;
 
+import com.example.OnlineAuctionApp.models.Product;
 import com.example.OnlineAuctionApp.models.User;
 import com.example.OnlineAuctionApp.service.BidService;
 import lombok.RequiredArgsConstructor;
@@ -27,14 +28,4 @@ public class BidController {
         return ResponseEntity.ok(bidService.getHighestBid(productId));
     }
 
-    @GetMapping("/winningBidder/{productId}")
-    public ResponseEntity<User> getWinningBidder(@PathVariable Long productId){
-        User winningBidder = bidService.getWinningBidder(productId);
-        if(winningBidder == null){
-            return ResponseEntity.notFound().build();
-        }
-        else {
-            return ResponseEntity.ok(winningBidder);
-        }
-    }
 }

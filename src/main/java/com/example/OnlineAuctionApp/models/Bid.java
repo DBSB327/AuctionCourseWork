@@ -6,21 +6,23 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class Bid {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
     @Column(name = "amount")
     private Integer amount;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinColumn(name="product_id")
-    private Product product;
+    private List<Product> product;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "buyer_id")
     private User buyer;

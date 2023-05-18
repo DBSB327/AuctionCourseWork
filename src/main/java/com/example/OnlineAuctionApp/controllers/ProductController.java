@@ -11,7 +11,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/product")
 @RequiredArgsConstructor
@@ -23,22 +25,34 @@ public class ProductController {
     }
 
     @PostMapping("/search")
-    public ResponseEntity<Product> getProductById(@RequestBody Product product){
+    public ResponseEntity<Product> getProductByName(@RequestBody Product product){
         return ResponseEntity.ok(productService.getProductsByName(product));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
+        Optional<Product> productOptional = productService.getProductById(id);
+        if (productOptional.isPresent()) {
+            return ResponseEntity.ok(productOptional.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
     @PostMapping("/add")
     public ResponseEntity<Product> addProduct(@RequestBody Product product){
         return ResponseEntity.ok(productService.addProduct(product));
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity deleteProductById(@PathVariable Long id){
-        if(!productService.getProductById(id).isPresent()){
-            ResponseEntity.badRequest().build();
-        }
-        productService.deleteProductById(id);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> deleteProductById(@PathVariable Long id){
+      Optional<Product> productOptional = productService.getProductById(id);
+      if(!productOptional.isPresent()){
+          return ResponseEntity.badRequest().build();
+      }
+      else {
+          productService.deleteProductById(id);
+          return ResponseEntity.ok().build();
+      }
     }
 
     @PutMapping ("/update")

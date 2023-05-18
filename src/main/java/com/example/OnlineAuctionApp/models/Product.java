@@ -35,9 +35,11 @@
         @JoinColumn(name="seller_id")
         private User seller;
         @JsonIgnore
-        @OneToMany
+        @ManyToMany
         private List<Bid> bids;
         @ManyToOne(fetch = FetchType.LAZY)
+        @JsonIgnore
         @JoinColumn(name="category_id")
         private Category category;
+
     }
